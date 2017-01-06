@@ -13,6 +13,7 @@ int main(int argc, char **argv) {
 	cout << "Program start.." << endl;
 
 	map <string, vector<int> > occurences;
+	
 	string src = "data/marchCrisis";
 	int e = 5;
 	int v = 0;
@@ -102,6 +103,7 @@ int main(int argc, char **argv) {
 			cout << endl;
 
 			/* Construct the co-occurence graph if this word has a peak */
+			map <pair<string, string>, int> graph;
 			ifstream tweets_src(src.c_str());
 			int cortweets = 0;
 			bool notsee = true;
@@ -132,7 +134,31 @@ int main(int argc, char **argv) {
 									//cout << "A tweet is found related with this location" << endl;
 									cortweets++;
 									/* Analyzing the correlated tweet */
-										// TODO!!!
+									istringstream wordss(contain);
+									vector<string> keywords;
+									string tmp;
+									while(wordss >> tmp) {
+										size_t found = tmp.find("/"); // delete anotations
+										if(found==std::string::npos) {
+											found = tmp.find("_"); // delete tags
+											if(found==std::string::npos) {
+												keywords.push_back(tmp);
+											}
+										}
+									}
+									//cout << keywords.size() << endl;
+									//for(int i = 0; i < keywords.size(); i++) cout << keywords[i] << endl;
+									for(int i = 0; i < keywords.size(); i++) {
+										for(int j = i+1; j < keywords.size(); j++) {
+											// TODO verify differents
+											pair<string, string> couple;
+											if(keywords[i] < keywords[j])
+												couple = make_pair(keywords[i], keywords[j]);
+											else
+												couple = make_pair(keywords[j], keywords[i]);
+											graph[couple]++;
+										}
+									}
 								}
 							}
 						}
@@ -144,6 +170,13 @@ int main(int argc, char **argv) {
 				cout << "Cannot open the source." << endl;
 			}
 			cout << cortweets << endl;
+			map <pair<string, string>, int>::iterator q;
+			for(q = graph.begin(); q != graph.end(); q++) {
+				cout << "Edge of weight " << q->second << " between " << q->first.first << " and " << q->first.second << endl;
+			}
+			
+			/* Graph mining */
+			
 		}
 	}
     return 0;
