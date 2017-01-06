@@ -103,9 +103,11 @@ int main(int argc, char **argv) {
 			cout << endl;
 
 			/* Construct the co-occurence graph if this word has a peak */
-			map <pair<string, string>, int> graph;
+			map <string, map <string, int> > graph;
+			//map <pair<string, string>, int> graph;
 			ifstream tweets_src(src.c_str());
 			int cortweets = 0;
+			int nb_links = 0;
 			bool notsee = true;
 			int begin = 0;
 			if(tweets_src) {
@@ -150,13 +152,15 @@ int main(int argc, char **argv) {
 									//for(int i = 0; i < keywords.size(); i++) cout << keywords[i] << endl;
 									for(int i = 0; i < keywords.size(); i++) {
 										for(int j = i+1; j < keywords.size(); j++) {
-											// TODO verify differents
-											pair<string, string> couple;
-											if(keywords[i] < keywords[j])
-												couple = make_pair(keywords[i], keywords[j]);
-											else
-												couple = make_pair(keywords[j], keywords[i]);
+											// TODO verify they're differents
+											/*pair<string, string> couple;
+											couple = make_pair(keywords[i], keywords[j]);
 											graph[couple]++;
+											couple = make_pair(keywords[j], keywords[i]);
+											graph[couple]++;*/
+											graph[keywords[i]][keywords[j]]++;
+											graph[keywords[j]][keywords[i]]++;
+											nb_links++;
 										}
 									}
 								}
@@ -169,12 +173,19 @@ int main(int argc, char **argv) {
 			} else {
 				cout << "Cannot open the source." << endl;
 			}
-			cout << cortweets << endl;
-			map <pair<string, string>, int>::iterator q;
+			/*map <pair<string, string>, int>::iterator q;
 			for(q = graph.begin(); q != graph.end(); q++) {
 				cout << "Edge of weight " << q->second << " between " << q->first.first << " and " << q->first.second << endl;
-			}
-			
+			}*/
+			map <string, map <string, int> >::iterator q;
+			for(q = graph.begin(); q != graph.end(); q++) {
+				map <string, int>::iterator r;
+				for(r = q->second.begin(); r != q->second.end(); r++) {
+					cout << "Edge of weight " << r->second << " between " << q->first << " and " << r->first << endl;
+				}
+			}	
+			cout << "Correlated tweets: " << cortweets << " Total edge weight: " << nb_links << " Keywords: " << graph.size() << endl;	
+
 			/* Graph mining */
 			
 		}
