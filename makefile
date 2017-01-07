@@ -1,9 +1,9 @@
 MF=			makefile
 CC=			g++
 EXE=    	extractor
-SRC=		main.c
+SRC=		main.cpp functions.cpp
 OBJ= 		$(SRC:.c=.o)
-HD=			
+HD=			functions.hpp
 CFLAGS=		-Wall
 LDFLAGS=	-Wall -lm
 

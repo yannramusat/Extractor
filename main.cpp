@@ -9,35 +9,17 @@
 #include <list>
 #include <set>
 
+#include "functions.hpp"
+
 using namespace std;
 
 int main(int argc, char **argv) {
 	map <string, vector<int> > occurences;
 	
 	string src = "data/marchCrisis";
-	int e = 5;
+	int e = 9;
 	int v = 0;
-
-	/* Parsing options and parameters */
-	while(1) {
-		int opt = getopt(argc, argv, "e:vh");
-		if(opt < 0) break;
-		switch(opt) {
-			case 'e': 
-				e = atoi(optarg);
-				break;
-			case 'v':
-				v = 1;
-				break;
-			case 'h':
-			default:
-				fprintf (stdout, " Usage: %s\n", argv[0]);
-				fprintf (stdout, "  -e,	<int>		Precision for the pick.	Default value: 5\n");
-				fprintf (stdout, "  -v,			Verbose mode.		Default: off\n");
-				fprintf (stdout, "  -h, 			Display help.\n");
-				exit(1);
-		}
-	}
+	parse_opt(&e, &v, argc, argv);
 
 	/* Parsing source file */ 
 	cout << "Parsing source file.." << endl;
