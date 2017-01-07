@@ -7,12 +7,11 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <set>
 
 using namespace std;
 
 int main(int argc, char **argv) {
-	cout << "Program start.." << endl;
-
 	map <string, vector<int> > occurences;
 	
 	string src = "data/marchCrisis";
@@ -153,15 +152,16 @@ int main(int argc, char **argv) {
 									//for(int i = 0; i < keywords.size(); i++) cout << keywords[i] << endl;
 									for(int i = 0; i < keywords.size(); i++) {
 										for(int j = i+1; j < keywords.size(); j++) {
-											// TODO verify they're differents
-											/*pair<string, string> couple;
-											couple = make_pair(keywords[i], keywords[j]);
-											graph[couple]++;
-											couple = make_pair(keywords[j], keywords[i]);
-											graph[couple]++;*/
-											graph[keywords[i]][keywords[j]]++;
-											graph[keywords[j]][keywords[i]]++;
-											nb_links++;
+											if(keywords[i].compare(keywords[j]) != 0){
+												/*pair<string, string> couple;
+												couple = make_pair(keywords[i], keywords[j]);
+												graph[couple]++;
+												couple = make_pair(keywords[j], keywords[i]);
+												graph[couple]++;*/
+												graph[keywords[i]][keywords[j]]++;
+												graph[keywords[j]][keywords[i]]++;
+												nb_links++;
+											}
 										}
 									}
 								}
@@ -193,12 +193,12 @@ int main(int argc, char **argv) {
 
 			/* Graph mining */
 			double r_g = nb_links / graph.size();
-			double r_bg = r_g;
+			//double r_bg = r_g;
 			map <string, map <string, int> > best_graph = graph;
 			
 			// buckets to do it in linear time
-			vector<list<string> > deltas;
-			deltas.resize(max_degree);
+			vector<set<string> > deltas;
+			deltas.resize(max_degree+1);
 			for(q = graph.begin(); q != graph.end(); q++) {
 				map <string, int>::iterator r;
 				int degree = 0;
@@ -206,24 +206,72 @@ int main(int argc, char **argv) {
 					//cout << "Edge of weight " << r->second << " between " << q->first << " and " << r->first << endl;
 					degree += r->second;
 				}
-				deltas[degree-1].push_back(q->first);
+				deltas[degree].insert(q->first);
 			}
-			for(int i = 0; i < deltas.size(); i++) {
-				cout << "Degree " << i << ": ";
-				list<string>::iterator j;
-				for(j = deltas[i].begin(); j != deltas[i].end(); j++) {
-					cout << *j;
+			/*for(int i = 0; i < deltas.size(); i++) {
+				if(deltas[i].size() != 0) {
+					cout << "Degree " << i << ": ";
+					list<string>::iterator j;
+					for(j = deltas[i].begin(); j != deltas[i].end(); j++) {
+						cout << *j << " ";
+					}
+					cout << endl;
 				}
-				cout << endl;
+			}*/
+
+			// peel iteratively the graph
+			int min_degree = 0;
+			while(graph.size() > 5) {
+				// find a min
+				while(deltas[min_degree].size() == 0) min_degree++;
+				//string node = deltas[min_degree].back();
+				//deltas[min_degree].pop_back();
+				set <string>::iterator itest = deltas[min_degree].begin();
+				string node = *itest;
+				deltas[min_degree].erase(deltas[min_degree].find(node));
+				//cout << "We want to delete: " << node << " of degree: " << min_degree << endl;
+				// update graph
+				nb_links -= min_degree;				
+				map <string, int>::iterator r;
+				for(r = graph[node].begin(); r != graph[node].end(); r++) {
+					//cout << "	We consider neighboor: "<< r->first << endl;
+					// update deltas
+						int degree1 = 0;
+						map <string, int>::iterator s;
+						for(s = graph[r->first].begin(); s != graph[r->first].end(); s++) {
+							degree1 += s->second;
+						}
+						int degree2 = degree1-(r->second);
+						string neigh = r->first;
+						// suppr le voisin de la liste degree1
+						/*list<string>::iterator itd;
+						for(itd = deltas[degree1].begin(); itd != deltas[degree1].end(); ++itd) {
+							cout<<"		search "<<*itd<<" in degree "<<degree1<<endl;
+							if(neigh.compare(*itd) == 0) { cout << "		succeed" << endl; deltas[degree1].erase(itd);}
+							cout<<"		test_done"<<endl;
+						}*/
+						deltas[degree1].erase(neigh);
+						//cout << "		Deleted in: " << degree1 << endl;
+						deltas[degree2].insert(neigh);
+						//cout << "		Added in: " << degree2 << endl;
+						if(degree2 < min_degree) min_degree = degree2;
+					graph[r->first].erase(node);
+				}
+				graph.erase(node);
+				// update best_graph
+				if(graph.size() != 0) {
+					if(nb_links / graph.size() > r_g) {
+						r_g = nb_links / graph.size();
+						best_graph = graph;
+					}
+				}
 			}
 
-			// peel
-			/*int min_degree = 0;
-			while(graph.size() != 0) {
-				// find a min
-				// update graph
-				// update best_graph
-			}*/
+			/* Printing keywords of the densest subgraph */
+			map <string, map <string, int> >::iterator it;
+			for(it = best_graph.begin(); it != best_graph.end(); it++) {
+				cout << it->first << endl;
+			}
 		}
 	}
     return 0;
