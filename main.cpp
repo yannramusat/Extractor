@@ -8,65 +8,27 @@
 #include <vector>
 #include <list>
 #include <set>
-
 #include "functions.hpp"
-
 using namespace std;
 
 int main(int argc, char **argv) {
-	map <string, vector<int> > occurences;
-	
 	string src = "data/marchCrisis";
 	int e = 9;
 	int v = 0;
 	parse_opt(&e, &v, argc, argv);
 
 	/* Parsing source file */ 
-	cout << "Parsing source file.." << endl;
-	ifstream tweets_src(src.c_str());
-	bool notsee = true;
-	int begin = 0;
-	if(tweets_src) {
-		while(!tweets_src.eof()) {
-			int timestamp;
-			tweets_src >> timestamp;
-			if(notsee) {
-				begin = timestamp; 
-				notsee = false;
-			}
-			if(timestamp > 0) { // handle last line
-				string contain;
-				getline(tweets_src, contain);
-				//cout << ">>> Date: " << timestamp << " <<<" << endl;	
-				istringstream words(contain);
-				while(!words.eof()) {
-					string word;
-					words >> word;
-					/* Studying word by word */
-					// highlight locations
-					size_t found = word.find("b-geo-loc_");
-					if (found!=std::string::npos) {
-						word = word.substr(10, string::npos);
-						// TODO SUPPR HASHTAG
-						//cout << "Location: " << word << endl;
-							// DICTIONNAIRE POUR CODER LES FREQUENCES
-							occurences[word].resize(31,0);
-							int day = (timestamp-begin)/86400;
-							occurences[word][day]++;
-					}
-					//cout << word << endl;
-				}
-				timestamp = -1;	// handle last line
-			}
-		}	
-		tweets_src.close();
-    } else {
-		cout << "Cannot open the source." << endl;
-	}
+	map <string, vector<int> > occurences;
+	cout << "Parsing source file... ";
+	cout.flush();
+	parse_source(occurences, src);
+	cout << "Parsing done." << endl;
 	
 	/* Find and solve peaks */
 	map<string, vector<int> >::iterator p;
+	bool fpeaks = false;
 	for(p = occurences.begin(); p != occurences.end(); p++) {
+		/* Verify if there's a peak */
 		bool ok = false;
 		int sum = 0;
 		for(int i = 0; i < 31; i++) {
@@ -74,108 +36,45 @@ int main(int argc, char **argv) {
 		}
 		sum /= 31;
 		for(int i = 0; i < 31; i++) {
-			if(p->second[i] > e*sum+e*e) ok = true;
+			if(p->second[i] > e*sum+e*e) { ok = true; fpeaks = true; }
 		}
+
+		/* Start mining if yes */
 		if(ok) {
 			/* Print occurences day per day */
-			cout << p->first;
+			cout << "================================================================" << endl;
+			cout << "Peak found for location <<<" << p->first << ">>> in day(s): ";
 			for(int i = 0; i < 31; i++) {
-				cout << " "<< p->second[i];
+				if(p->second[i] > e*sum+e*e) cout << " "<< i;
 			}
 			cout << endl;
 
 			/* Construct the co-occurence graph if this word has a peak */
 			map <string, map <string, int> > graph;
-			//map <pair<string, string>, int> graph;
-			ifstream tweets_src(src.c_str());
 			int cortweets = 0;
 			int nb_links = 0;
-			bool notsee = true;
-			int begin = 0;
-			if(tweets_src) {
-				while(!tweets_src.eof()) {
-					int timestamp;
-					tweets_src >> timestamp;
-					if(notsee) {
-						begin = timestamp; 
-						notsee = false;
-					}
-					if(timestamp > 0) { // handle last line
-						string contain;
-						getline(tweets_src, contain);
-						//cout << ">>> Date: " << timestamp << " <<<" << endl;	
-						istringstream words(contain);
-						while(!words.eof()) {
-							string word;
-							words >> word;
-							/* Verifying if it's a correlated tweet*/
-							// highlight locations
-							size_t found = word.find("b-geo-loc_");
-							if (found!=std::string::npos) {
-								word = word.substr(10, string::npos);
-								// TODO SUPPR HASHTAG
-								if(word.compare(p->first) == 0) {
-									//cout << "A tweet is found related with this location" << endl;
-									cortweets++;
-									/* Analyzing the correlated tweet */
-									istringstream wordss(contain);
-									vector<string> keywords;
-									string tmp;
-									while(wordss >> tmp) {
-										size_t found = tmp.find("/"); // delete anotations
-										if(found==std::string::npos) {
-											found = tmp.find("_"); // delete tags
-											if(found==std::string::npos) {
-												keywords.push_back(tmp);
-											}
-										}
-									}
-									//cout << keywords.size() << endl;
-									//for(int i = 0; i < keywords.size(); i++) cout << keywords[i] << endl;
-									for(int i = 0; i < keywords.size(); i++) {
-										for(int j = i+1; j < keywords.size(); j++) {
-											if(keywords[i].compare(keywords[j]) != 0){
-												/*pair<string, string> couple;
-												couple = make_pair(keywords[i], keywords[j]);
-												graph[couple]++;
-												couple = make_pair(keywords[j], keywords[i]);
-												graph[couple]++;*/
-												graph[keywords[i]][keywords[j]]++;
-												graph[keywords[j]][keywords[i]]++;
-												nb_links++;
-											}
-										}
-									}
-								}
-							}
-						}
-						timestamp = -1;	// handle last line
-					}
-				}	
-				tweets_src.close();
-			} else {
-				cout << "Cannot open the source." << endl;
-			}
-			/*map <pair<string, string>, int>::iterator q;
-			for(q = graph.begin(); q != graph.end(); q++) {
-				cout << "Edge of weight " << q->second << " between " << q->first.first << " and " << q->first.second << endl;
-			}*/
+			cout << "Start constructing the co-occurence graph... ";
+			cout.flush();
+			construct_cograph(graph, p->first, &cortweets, &nb_links, src);	
+			cout << "Done." << endl;	
+
+			/* Compute max_degree */
 			map <string, map <string, int> >::iterator q;
 			int max_degree = 0;
 			for(q = graph.begin(); q != graph.end(); q++) {
 				map <string, int>::iterator r;
 				int degree = 0;
-				for(r = q->second.begin(); r != q->second.end(); r++) {
-					//cout << "Edge of weight " << r->second << " between " << q->first << " and " << r->first << endl;
-					degree += r->second;
-				}
+				for(r = q->second.begin(); r != q->second.end(); r++) degree += r->second;
 				if(degree > max_degree) max_degree = degree;
-			}	
-			cout << "Correlated tweets: " << cortweets << " Total edge weight: " << nb_links << " Keywords: " << graph.size()  << " Max degree: " << max_degree << endl;	
+			}
+			
+			/* Print some stats */	
+			cout << "  Correlated tweets: " << cortweets << endl << "  Total edge weight: " << nb_links << endl << "  Keywords: " << graph.size()  << endl << "  Max degree: " << max_degree << endl;	
 
 			/* Graph mining */
+			cout << "Start mining the graph... ";
+			cout.flush();
 			double r_g = nb_links / graph.size();
-			//double r_bg = r_g;
 			map <string, map <string, int> > best_graph = graph;
 			
 			// buckets to do it in linear time
@@ -190,16 +89,6 @@ int main(int argc, char **argv) {
 				}
 				deltas[degree].insert(q->first);
 			}
-			/*for(int i = 0; i < deltas.size(); i++) {
-				if(deltas[i].size() != 0) {
-					cout << "Degree " << i << ": ";
-					list<string>::iterator j;
-					for(j = deltas[i].begin(); j != deltas[i].end(); j++) {
-						cout << *j << " ";
-					}
-					cout << endl;
-				}
-			}*/
 
 			// peel iteratively the graph
 			int min_degree = 0;
@@ -225,13 +114,6 @@ int main(int argc, char **argv) {
 						}
 						int degree2 = degree1-(r->second);
 						string neigh = r->first;
-						// suppr le voisin de la liste degree1
-						/*list<string>::iterator itd;
-						for(itd = deltas[degree1].begin(); itd != deltas[degree1].end(); ++itd) {
-							cout<<"		search "<<*itd<<" in degree "<<degree1<<endl;
-							if(neigh.compare(*itd) == 0) { cout << "		succeed" << endl; deltas[degree1].erase(itd);}
-							cout<<"		test_done"<<endl;
-						}*/
 						deltas[degree1].erase(neigh);
 						//cout << "		Deleted in: " << degree1 << endl;
 						deltas[degree2].insert(neigh);
@@ -248,13 +130,16 @@ int main(int argc, char **argv) {
 					}
 				}
 			}
+			cout << "Done." << endl;
 
 			/* Printing keywords of the densest subgraph */
+			cout << "Most relevant keywords: " << endl;
 			map <string, map <string, int> >::iterator it;
 			for(it = best_graph.begin(); it != best_graph.end(); it++) {
-				cout << it->first << endl;
-			}
+				cout << "  " << it->first << endl;
+			}			
 		}
 	}
+	if(!fpeaks) cout << "No peak found." << endl;
     return 0;
 }
