@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <list>
 
 using namespace std;
 
@@ -178,16 +179,51 @@ int main(int argc, char **argv) {
 				cout << "Edge of weight " << q->second << " between " << q->first.first << " and " << q->first.second << endl;
 			}*/
 			map <string, map <string, int> >::iterator q;
+			int max_degree = 0;
 			for(q = graph.begin(); q != graph.end(); q++) {
 				map <string, int>::iterator r;
+				int degree = 0;
 				for(r = q->second.begin(); r != q->second.end(); r++) {
-					cout << "Edge of weight " << r->second << " between " << q->first << " and " << r->first << endl;
+					//cout << "Edge of weight " << r->second << " between " << q->first << " and " << r->first << endl;
+					degree += r->second;
 				}
+				if(degree > max_degree) max_degree = degree;
 			}	
-			cout << "Correlated tweets: " << cortweets << " Total edge weight: " << nb_links << " Keywords: " << graph.size() << endl;	
+			cout << "Correlated tweets: " << cortweets << " Total edge weight: " << nb_links << " Keywords: " << graph.size()  << " Max degree: " << max_degree << endl;	
 
 			/* Graph mining */
+			double r_g = nb_links / graph.size();
+			double r_bg = r_g;
+			map <string, map <string, int> > best_graph = graph;
 			
+			// buckets to do it in linear time
+			vector<list<string> > deltas;
+			deltas.resize(max_degree);
+			for(q = graph.begin(); q != graph.end(); q++) {
+				map <string, int>::iterator r;
+				int degree = 0;
+				for(r = q->second.begin(); r != q->second.end(); r++) {
+					//cout << "Edge of weight " << r->second << " between " << q->first << " and " << r->first << endl;
+					degree += r->second;
+				}
+				deltas[degree-1].push_back(q->first);
+			}
+			for(int i = 0; i < deltas.size(); i++) {
+				cout << "Degree " << i << ": ";
+				list<string>::iterator j;
+				for(j = deltas[i].begin(); j != deltas[i].end(); j++) {
+					cout << *j;
+				}
+				cout << endl;
+			}
+
+			// peel
+			/*int min_degree = 0;
+			while(graph.size() != 0) {
+				// find a min
+				// update graph
+				// update best_graph
+			}*/
 		}
 	}
     return 0;
