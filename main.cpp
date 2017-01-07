@@ -74,62 +74,15 @@ int main(int argc, char **argv) {
 			/* Graph mining */
 			cout << "Start mining the graph... ";
 			cout.flush();
-			double r_g = nb_links / graph.size();
-			map <string, map <string, int> > best_graph = graph;
-			
-			// buckets to do it in linear time
+
+			/* Initialize buckets to do it in linear time */
 			vector<set<string> > deltas;
 			deltas.resize(max_degree+1);
-			for(q = graph.begin(); q != graph.end(); q++) {
-				map <string, int>::iterator r;
-				int degree = 0;
-				for(r = q->second.begin(); r != q->second.end(); r++) {
-					//cout << "Edge of weight " << r->second << " between " << q->first << " and " << r->first << endl;
-					degree += r->second;
-				}
-				deltas[degree].insert(q->first);
-			}
+			initialize_buckets(graph, deltas);
 
-			// peel iteratively the graph
-			int min_degree = 0;
-			while(graph.size() > 5) {
-				// find a min
-				while(deltas[min_degree].size() == 0) min_degree++;
-				//string node = deltas[min_degree].back();
-				//deltas[min_degree].pop_back();
-				set <string>::iterator itest = deltas[min_degree].begin();
-				string node = *itest;
-				deltas[min_degree].erase(deltas[min_degree].find(node));
-				//cout << "We want to delete: " << node << " of degree: " << min_degree << endl;
-				// update graph
-				nb_links -= min_degree;				
-				map <string, int>::iterator r;
-				for(r = graph[node].begin(); r != graph[node].end(); r++) {
-					//cout << "	We consider neighboor: "<< r->first << endl;
-					// update deltas
-						int degree1 = 0;
-						map <string, int>::iterator s;
-						for(s = graph[r->first].begin(); s != graph[r->first].end(); s++) {
-							degree1 += s->second;
-						}
-						int degree2 = degree1-(r->second);
-						string neigh = r->first;
-						deltas[degree1].erase(neigh);
-						//cout << "		Deleted in: " << degree1 << endl;
-						deltas[degree2].insert(neigh);
-						//cout << "		Added in: " << degree2 << endl;
-						if(degree2 < min_degree) min_degree = degree2;
-					graph[r->first].erase(node);
-				}
-				graph.erase(node);
-				// update best_graph
-				if(graph.size() != 0) {
-					if(nb_links / graph.size() > r_g) {
-						r_g = nb_links / graph.size();
-						best_graph = graph;
-					}
-				}
-			}
+			/* Peel iteratively the graph */
+			map <string, map <string, int> > best_graph = graph;
+			peel_graph(graph, best_graph, deltas, &nb_links);
 			cout << "Done." << endl;
 
 			/* Printing keywords of the densest subgraph */

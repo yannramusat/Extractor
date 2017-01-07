@@ -34,8 +34,6 @@ void parse_opt(int* e, int* v, int argc, char** argv) {
 	}
 }
 
-/* General functions */
-
 /* Specific functions */
 void parse_source(map <string, vector<int> >& occurences, string src) {
 	ifstream tweets_src(src.c_str());
@@ -140,5 +138,51 @@ void construct_cograph(map <string, map <string, int> >& graph, string location,
 		tweets_src.close();
 	} else {
 		cout << "Cannot open the source." << endl;
+	}
+}
+
+void initialize_buckets(map <string, map <string, int> >& graph, vector<set<string> >& deltas) {
+	map <string, map <string, int> >::iterator q;
+	for(q = graph.begin(); q != graph.end(); q++) {
+		map <string, int>::iterator r;
+		int degree = 0;
+		for(r = q->second.begin(); r != q->second.end(); r++)
+			degree += r->second;
+		deltas[degree].insert(q->first);
+	}
+}
+
+void peel_graph(map <string, map <string, int> >& graph, map <string, map <string, int> >& best_graph, vector<set<string> >& deltas, int* nb_links) {
+	double r_g = *nb_links / graph.size();
+	int min_degree = 0;
+	while(graph.size() > 0) {
+		// find a min
+		while(deltas[min_degree].size() == 0) min_degree++;
+		set <string>::iterator itest = deltas[min_degree].begin();
+		string node = *itest;
+		deltas[min_degree].erase(deltas[min_degree].find(node));
+		// update graph
+		*nb_links -= min_degree;				
+		map <string, int>::iterator r;
+		for(r = graph[node].begin(); r != graph[node].end(); r++) {
+			int degree1 = 0;
+			map <string, int>::iterator s;
+			for(s = graph[r->first].begin(); s != graph[r->first].end(); s++)
+				degree1 += s->second;
+			int degree2 = degree1-(r->second);
+			string neigh = r->first;
+			deltas[degree1].erase(neigh);
+			deltas[degree2].insert(neigh);
+			if(degree2 < min_degree) min_degree = degree2;
+			graph[r->first].erase(node);
+		}
+		graph.erase(node);
+		// update best_graph
+		if(graph.size() != 0) {
+			if(*nb_links / graph.size() > r_g) {
+				r_g = *nb_links / graph.size();
+				best_graph = graph;
+			}
+		}
 	}
 }
