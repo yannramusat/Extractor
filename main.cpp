@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 			cout << "================================================================" << endl;
 			cout << "Peak found for location <<<" << p->first << ">>> in day(s): ";
 			for(int i = 0; i < 31; i++) {
-				if(p->second[i] > e*sum+e*e) cout << " "<< i;
+				if(p->second[i] > e*sum+e*e) cout << " "<< i+1;
 			}
 			cout << endl;
 

@@ -1,0 +1,43 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\title{2-29-2 Graph Mining - Event Detection}
+\author{Yann Ramusat}
+
+\begin{document}
+\maketitle
+The whole project is done in C++. It is freely available on Github\footnote{https://github.com/yannramusat/Extractor}. Place your own datasets in a directory \textit{data} where you have installed the program. Use -h to get helped if needed. 
+
+\section{Choices made}
+\subsection{Part 4}
+ To identify locations with a peak we use the following function:
+\[
+   \rho*coeff + coeff^2
+\]
+ where $\rho$ is the average number of peak per day for the location and $coeff$ is an integer choosed by the user (default is $9$). 
+ 
+ The first part is basically used to identify a peak and the quadratic part is to avoid locations with not enough tweets (for example if the average number of tweets per day for a location is less than one, $5$ tweets for a day could be considered as a peak).
+ 
+ Experimentally, it seems that $8-10$ is a really suitable range for values of $coeff$ to avoid finding other events than crisis. For value $9$ over the dataset \textit{marchCrisis} the algorithm identify locations: belgium (22), brussels (22), capitol (28), chicago (12), cyprus (29), istanbul (19), lahore (27 - 28), metro (22), nigeria (25), pakistan (27) and zaventem (22).
+ 
+ You can easily verify that all of this peaks corresponds to real events that have been widely discussed in the press.
+ 
+ For smaller values (like $5$) we detect much more events that we might not have heard from, like spain (25) with keywords "bus carrying crash crashes foreign injured killed people students" precisely explaining what happened. But we also have some false positives like the concert of Justin Bieber or the discourse of Barack Obama at Havana (Cuba).
+ 
+ Choosing value of $coeff$ is a tradeoff between avoiding false positives and finding events not covered by mainstream medias.
+ 
+\subsection{Part 5}
+
+For each location with a peak we construct the co-occurence graph and apply the Densest Subgraph Algorithm we have seen in Lesson $2$.
+
+We return the keywords of the Densest Subgraph. In average there are only $8$ or $9$ such keywords but sometimes we get only $5$ or more than fifteen (very uncommon).
+
+\section{Analysis}
+\subsection{Precision}
+\subsection{Interesting detections}
+\subsection{Ameliorations}
+-enlever mots comme pray
+\\-plus de precision temporelle
+
+\end{document}
