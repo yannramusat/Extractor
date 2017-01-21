@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 			cout.flush();
 
 			/* Initialize buckets to do it in linear time */
-			vector<set<string> > deltas;
+			vector <set <string> > deltas;
 			deltas.resize(max_degree+1);
 			initialize_buckets(graph, deltas);
 
@@ -87,10 +87,7 @@ int main(int argc, char **argv) {
 
 			/* Printing keywords of the densest subgraph */
 			cout << "Most relevant keywords: " << endl;
-			map <string, map <string, int> >::iterator it;
-			for(it = best_graph.begin(); it != best_graph.end(); it++) {
-				cout << "  " << it->first << endl;
-			}			
+			print_graph(best_graph);
 		}
 	}
 	if(!fpeaks) cout << "No peak found." << endl;

@@ -78,6 +78,20 @@ void parse_source(map <string, vector<int> >& occurences, string src) {
 	}
 }
 
+int filter(string tmp) {
+	int result = 0;
+	if(tmp.compare("thoughts") == 0) result = 1;
+	if(tmp.compare("tribute") == 0) result = 1;
+	if(tmp.compare("lit") == 0) result = 1;
+	if(tmp.compare("colors") == 0) result = 1;
+	if(tmp.compare("flag") == 0) result = 1;
+	if(tmp.compare("spontaneous") == 0) result = 1;
+	if(tmp.compare("deeply") == 0) result = 1;
+	if(tmp.compare("saddened") == 0) result = 1;
+	if(tmp.compare("deplorable") == 0) result = 1;
+	return result;
+}
+
 void construct_cograph(map <string, map <string, int> >& graph, string location, int* cortweets, int* nb_links, string src) {
 	ifstream tweets_src(src.c_str());
 	bool notsee = true;
@@ -98,7 +112,7 @@ void construct_cograph(map <string, map <string, int> >& graph, string location,
 				while(!words.eof()) {
 					string word;
 					words >> word;
-					/* Verifying if it's a correlated tweet*/
+					/* Verifying if it's a correlated tweet */
 					// highlight locations
 					size_t found = word.find("b-geo-loc_");
 					if (found!=std::string::npos) {
@@ -116,7 +130,8 @@ void construct_cograph(map <string, map <string, int> >& graph, string location,
 								if(found==std::string::npos) {
 									found = tmp.find("_"); // delete tags
 									if(found==std::string::npos) {
-										keywords.push_back(tmp);
+										if(filter(tmp) == 0)
+											keywords.push_back(tmp);
 									}
 								}
 							}
@@ -184,5 +199,27 @@ void peel_graph(map <string, map <string, int> >& graph, map <string, map <strin
 				best_graph = graph;
 			}
 		}
+	}
+}
+
+void print_graph(map <string, map <string, int> >& best_graph) {
+	map <string, map <string, int> >::iterator it;
+	map <int, string> keywords;
+	int seuil = 0;
+	for(it = best_graph.begin(); it != best_graph.end(); it++) {
+		map <string, int>::iterator r;
+		int degree = 0;
+		for(r = it->second.begin(); r != it->second.end(); r++) degree += r->second;
+		if (degree > seuil && keywords.size() > 4) {
+			keywords.erase(keywords.begin());
+			keywords[degree] = it->first;
+			seuil = degree;
+		} else if(degree > seuil) {
+			keywords[degree] = it->first;
+		}
+	}	
+	map <int, string>::iterator	ite;
+	for(ite = keywords.begin(); ite != keywords.end(); ite++) {
+		cout << "  " << ite->second << endl;
 	}
 }
