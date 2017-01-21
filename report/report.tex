@@ -19,25 +19,25 @@ The whole project is done in C++. It is freely available on Github\footnote{http
  
  The first part is basically used to identify a peak and the quadratic part is to avoid locations with not enough tweets (for example if the average number of tweets per day for a location is less than one, $5$ tweets for a day could be considered as a peak).
  
- Experimentally, it seems that $8-10$ is a really suitable range for values of $coeff$ to avoid finding other events than crisis. For value $9$ over the dataset \textit{marchCrisis} the algorithm identify locations: belgium (22), brussels (22), capitol (28), chicago (12), cyprus (29), istanbul (19), lahore (27 - 28), metro (22), nigeria (25), pakistan (27) and zaventem (22).
+ Experimentally, it seems that $8-10$ is a really suitable range for values of $coeff$ to avoid finding other events than crisis. For value $9$ over the dataset \textit{marchCrisis} the algorithm identify locations (day): belgium (22), brussels (22), capitol (28), chicago (12), cyprus (29), istanbul (19), lahore (27 - 28), metro (22), nigeria (25), pakistan (27) and zaventem (22).
  
  You can easily verify that all of this peaks corresponds to real events that have been widely discussed in the press.
  
- For smaller values (like $5$) we detect much more events that we might not have heard from, like spain (25) with keywords "bus carrying crash crashes foreign injured killed people students" precisely explaining what happened. But we also have some false positives like the concert of Justin Bieber or the discourse of Barack Obama at Havana (Cuba).
+ For smaller values (like $5$) we detect much more events that we might not have heard from, like spain (25) with keywords "injured, killed, crash, students, bus" precisely explaining what happened. But we also have some false positives like the concert of Justin Bieber or the discourse of Barack Obama at Havana (Cuba).
  
  Choosing value of $coeff$ is a tradeoff between avoiding false positives and finding events not covered by mainstream medias.
  
 \subsection{Part 5}
 
-For each location with a peak we construct the co-occurence graph and apply the Densest Subgraph Algorithm we have seen in Lesson $2$.
+For each location with a peak we construct the co-occurence graph and apply the Densest Subgraph Algorithm we have seen in Lesson $2$. In fact we apply a slight generalisation because we consider multigraph (equivalent to weighted ones).
 
-We return the keywords of the Densest Subgraph. In average there are only $8$ or $9$ such keywords but sometimes we get only $5$ or more than fifteen (very uncommon).
+We then apply a simple heuristic keeping only the five keywords of maximum degree and return them.
+
+Note that we filter the words whilst creating the co-occurence graph. The words belonging to the semantic vocabulary of meditation like "pray" or "thoughts" are ignored. Sometimes, this leads to less than $5$ words returned.
 
 \section{Analysis}
 \subsection{Precision}
 \subsection{Interesting detections}
-\subsection{Ameliorations}
--enlever mots comme pray
-\\-plus de precision temporelle
+
 
 \end{document}

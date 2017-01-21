@@ -14,14 +14,15 @@ using namespace std;
 int main(int argc, char **argv) {
 	string src = "data/marchCrisis";
 	int e = 9;
+	int d = 1;
 	int v = 0;
-	parse_opt(&e, &v, argc, argv);
+	parse_opt(&e, &d, &v, argc, argv);
 
 	/* Parsing source file */ 
 	map <string, vector<int> > occurences;
 	cout << "Parsing source file... ";
 	cout.flush();
-	parse_source(occurences, src);
+	parse_source(occurences, d, src);
 	cout << "Parsing done." << endl;
 	
 	/* Find and solve peaks */
@@ -31,11 +32,11 @@ int main(int argc, char **argv) {
 		/* Verify if there's a peak */
 		bool ok = false;
 		int sum = 0;
-		for(int i = 0; i < 31; i++) {
+		for(int i = 0; i < 31*d; i++) {
 			sum += p->second[i];
 		}
 		sum /= 31;
-		for(int i = 0; i < 31; i++) {
+		for(int i = 0; i < 31*d; i++) {
 			if(p->second[i] > e*sum+e*e) { ok = true; fpeaks = true; }
 		}
 
@@ -43,9 +44,9 @@ int main(int argc, char **argv) {
 		if(ok) {
 			/* Print occurences day per day */
 			cout << "================================================================" << endl;
-			cout << "Peak found for location <<<" << p->first << ">>> in day(s): ";
-			for(int i = 0; i < 31; i++) {
-				if(p->second[i] > e*sum+e*e) cout << " "<< i+1;
+			cout << "Peak found for location <<<" << p->first << ">>> in day(s):";
+			for(int i = 0; i < 31*d; i++) {
+				if(p->second[i] > e*sum+e*e) cout << " "<< (int)i/d+1 << "(" << (24/d)*(i%d) << "h)";
 			}
 			cout << endl;
 

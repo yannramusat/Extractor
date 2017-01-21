@@ -12,13 +12,16 @@
 using namespace std;
 
 /* Core functions */
-void parse_opt(int* e, int* v, int argc, char** argv) {
+void parse_opt(int* e, int* d, int* v, int argc, char** argv) {
 	while(1) {
-		int opt = getopt(argc, argv, "e:vh");
+		int opt = getopt(argc, argv, "e:d:vh");
 		if(opt < 0) break;
 		switch(opt) {
 			case 'e': 
 				*e = atoi(optarg);
+				break;
+			case 'd':
+				*d = atoi(optarg);
 				break;
 			case 'v':
 				*v = 1;
@@ -27,6 +30,7 @@ void parse_opt(int* e, int* v, int argc, char** argv) {
 			default:
 				fprintf (stdout, " Usage: %s\n", argv[0]);
 				fprintf (stdout, "  -e,	<int>		Precision for the pick.	Default value: 9\n");
+				fprintf (stdout, "  -d,	<int>		Interval per day.	Default value: 1\n");
 				fprintf (stdout, "  -v,			Verbose mode.		Default: off\n");
 				fprintf (stdout, "  -h, 			Display help.\n");
 				exit(1);
@@ -35,7 +39,7 @@ void parse_opt(int* e, int* v, int argc, char** argv) {
 }
 
 /* Specific functions */
-void parse_source(map <string, vector<int> >& occurences, string src) {
+void parse_source(map <string, vector<int> >& occurences, int d, string src) {
 	ifstream tweets_src(src.c_str());
 	bool notsee = true;
 	int begin = 0;
@@ -63,8 +67,8 @@ void parse_source(map <string, vector<int> >& occurences, string src) {
 						// TODO SUPPR HASHTAG
 						//cout << "Location: " << word << endl;
 						// update frequencies
-						occurences[word].resize(31,0);
-						int day = (timestamp-begin)/86400;
+						occurences[word].resize(31*d,0);
+						int day = (timestamp-begin)*d/86400;
 						occurences[word][day]++;
 					}
 					//cout << word << endl;
@@ -89,21 +93,17 @@ int filter(string tmp) {
 	if(tmp.compare("deeply") == 0) result = 1;
 	if(tmp.compare("saddened") == 0) result = 1;
 	if(tmp.compare("deplorable") == 0) result = 1;
+	if(tmp.compare("love") == 0) result = 1;
+	if(tmp.compare("prayers") == 0) result = 1;
 	return result;
 }
 
 void construct_cograph(map <string, map <string, int> >& graph, string location, int* cortweets, int* nb_links, string src) {
 	ifstream tweets_src(src.c_str());
-	bool notsee = true;
-	int begin = 0;
 	if(tweets_src) {
 		while(!tweets_src.eof()) {
 			int timestamp;
 			tweets_src >> timestamp;
-			if(notsee) {
-				begin = timestamp; 
-				notsee = false;
-			}
 			if(timestamp > 0) { // handle last line
 				string contain;
 				getline(tweets_src, contain);
@@ -135,8 +135,8 @@ void construct_cograph(map <string, map <string, int> >& graph, string location,
 									}
 								}
 							}
-							for(int i = 0; i < keywords.size(); i++) {
-								for(int j = i+1; j < keywords.size(); j++) {
+							for(unsigned int i = 0; i < keywords.size(); i++) {
+								for(unsigned int j = i+1; j < keywords.size(); j++) {
 									if(keywords[i].compare(keywords[j]) != 0){
 										graph[keywords[i]][keywords[j]]++;
 										graph[keywords[j]][keywords[i]]++;
