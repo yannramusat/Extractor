@@ -9,6 +9,9 @@
 \begin{document}
 \maketitle
 The whole project is done in C++. It is freely available on Github\footnote{https://github.com/yannramusat/Extractor}. Place your own datasets in a directory \textit{data} where you have installed the program. Use -h to get helped if needed. 
+You need to modify the $15^{th}$ line of \textit{main.cpp} and recompile to change the dataset you want to use.
+
+\tableofcontents
 
 \section{Choices made}
 \subsection{Part 4}
@@ -39,7 +42,7 @@ We then apply a simple heuristic keeping only the five keywords of maximum degre
 
 Note that we filter the words whilst creating the co-occurence graph. The words belonging to the semantic vocabulary of meditation like "pray" or "thoughts" are ignored. Sometimes, this leads to less than $5$ words returned.
 
-The complexity is linear but for some locations with lots of related tweets, for example $brussels$ in the dataset \textit{marchCrisis} there are $\sim 20K$ related tweets and a total edge weight of $\sim 388K$, so the mining can take up to $1$ minute to complete.
+The complexity is linear but for some locations with lots of related tweets, for example Brussels in the dataset \textit{marchCrisis} there are $\sim 20K$ related tweets and a total edge weight of $\sim 388K$, so the mining can take up to $1$ minute to complete.
 
 \section{Analysis}
 \subsection{Precision}
@@ -49,11 +52,32 @@ With parameters $e=5$ and $d=1$ we found $9$ out of $10$ terrorist attacks reper
 
 We highlight the keywords found for the attack in Iraq (26): "bomber, football, kids, died, attack". They give a precise insight of the event (cf wikipedia): "L'attentat du 25 mars 2016 à Al-Asriya en Irak désigne un attentat-suicide à la bombe s'étant déroulé lors d'un match de football de jeunes...".
 
-\paragraph{10 events}
+\paragraph{Events found}
 
+We have already mentionned some events (and their keywords) we have found for march.
+
+We now use the dataset for may.
+Those are interresting: guam 18 american base bomber crashes b-52 and egypt 19 technical egyptair attack terror crash.
+Both are about airplane crashes but we see some differencies over keywords giving specific information (crash in a base and attack or technical error for the other one).
 
 \paragraph{Redundancies}
+
+Because many locations can be associated with an event it's really difficult to avoid redundancies.
+For example with the terrorist attacks of Brussels we have $4$ locations, all are corrects: the country (Belgium), the city (Brussels), the name (Zaventem) and the kind of public transports (Metro).
+
+Redundancies in the list of keywords for a location generally do not occurs, the highlighted words are usually complementary.
+
 \subsection{Interesting detections}
 
+\subsubsection{Events not covered by mainstream medias}
+
+For may our program found this: Munich 10 killed knife injured man station.
+We found that there were a knife attack on may $10^{th}$ in a train station of Munich\footnote{https://en.wikipedia.org/wiki/Munich knife attack}. This can be easily found on the web using the keywords our algorithm returned but relatively harder using only the location or the date.
+
+\subsubsection{Unknown facts about well-known events}
+
+Unknown facts are difficult to find because we have only $5$ keywords to describe the event. But sometimes we have some precisions that are not widely discussed in the web (for example the fact that the crash in Guam was with a B-$52$).
+
+It's usefull to use the keywords with the location when googling it in order to find the most precise source of information about the event.
 
 \end{document}
