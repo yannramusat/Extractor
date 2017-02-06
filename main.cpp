@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
 	/* Find and solve peaks */
 	map<string, vector<int> >::iterator p;
 	bool fpeaks = false;
+	ofstream fichier_sortie("results.txt", ios::out | ios::trunc);
 	for(p = occurences.begin(); p != occurences.end(); p++) {
 		/* Verify if there's a peak */
 		bool ok = false;
@@ -86,11 +87,14 @@ int main(int argc, char **argv) {
 			peel_graph(graph, best_graph, deltas, &nb_links);
 			cout << "Done." << endl;
 
+			fichier_sortie << p->first;
 			/* Printing keywords of the densest subgraph */
 			cout << "Most relevant keywords: " << endl;
-			print_graph(best_graph);
+			print_graph(best_graph, fichier_sortie);
 		}
 	}
+	fichier_sortie.close();
 	if(!fpeaks) cout << "No peak found." << endl;
+	else cout << "\nAll results have been saved in 'results.txt'." << endl;
     return 0;
 }

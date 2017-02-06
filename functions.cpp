@@ -202,7 +202,7 @@ void peel_graph(map <string, map <string, int> >& graph, map <string, map <strin
 	}
 }
 
-void print_graph(map <string, map <string, int> >& best_graph) {
+void print_graph(map <string, map <string, int> >& best_graph, ofstream& fichier_sortie) {
 	map <string, map <string, int> >::iterator it;
 	map <int, string> keywords;
 	int seuil = 0;
@@ -221,5 +221,7 @@ void print_graph(map <string, map <string, int> >& best_graph) {
 	map <int, string>::iterator	ite;
 	for(ite = keywords.begin(); ite != keywords.end(); ite++) {
 		cout << "  " << ite->second << endl;
+		fichier_sortie << " " << ite->second;
 	}
+	fichier_sortie << endl;
 }
