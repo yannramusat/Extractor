@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 			cout << "Start constructing the co-occurence graph... ";
 			cout.flush();
 			construct_cograph(graph, p->first, &cortweets, &nb_links, src);	
-			cout << "Done." << endl;	
+			cout << "Done." << endl;
 
 			/* Compute max_degree */
 			map <string, map <string, int> >::iterator q;

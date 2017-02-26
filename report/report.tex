@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{url}
+\usepackage[]{algorithm2e}
 
 \title{2-29-2 Graph Mining - Event Detection}
 \author{Yann Ramusat}
@@ -9,7 +10,7 @@
 \begin{document}
 \maketitle
 The whole project is done in C++. It is freely available on Github\footnote{https://github.com/yannramusat/Extractor}. Place your own datasets in a directory \textit{data} where you have installed the program. Use -h to get helped if needed. 
-You need to modify the $15^{th}$ line of \textit{main.cpp} and recompile to change the dataset you want to use.
+You need to modify the $15^{th}$ line of \textit{main.cpp} and recompile to change the dataset you want to use another one.
 
 \tableofcontents
 
@@ -36,7 +37,20 @@ You need to modify the $15^{th}$ line of \textit{main.cpp} and recompile to chan
  
 \subsection{Part 5}
 
-For each location with a peak we construct the co-occurence graph and apply the Densest Subgraph Algorithm we have seen in Lesson $2$. In fact, we apply a slight generalisation because we consider multigraphs (equivalent to weighted ones). This gives a $2$-approximate densest subgraph.
+\begin{algorithm}
+\KwData{A weighted graph $G$}
+ \KwResult{A subgraph $H$ with high density}
+	$H = G$\;
+\While{$G$ contains at least one edge}{
+  Let $\nu$ be the node with minimum degree $\delta_G (\nu)$ in $G$\;
+  Remove $\nu$ and all its edges from $G$\;
+  If $\rho(H) > \rho(G)$ then $H \leftarrow G$\;
+  }
+  return $H$\;
+ \caption{Densest Subgraph}
+\end{algorithm}
+
+For each location with a peak we construct the co-occurence graph and use a generalization of the Densest Subgraph Algorithm we have seen in Lesson $2$ because we consider a weighted graph (with non-negative integer weights).
 
 We then apply a simple heuristic keeping only the five keywords of maximum degree and return them.
 

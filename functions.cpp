@@ -177,7 +177,7 @@ void peel_graph(map <string, map <string, int> >& graph, map <string, map <strin
 		string node = *itest;
 		deltas[min_degree].erase(deltas[min_degree].find(node));
 		// update graph
-		*nb_links -= min_degree;				
+		*nb_links -= min_degree;			
 		map <string, int>::iterator r;
 		for(r = graph[node].begin(); r != graph[node].end(); r++) {
 			int degree1 = 0;
